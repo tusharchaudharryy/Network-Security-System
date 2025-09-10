@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Credit Card Fraud Detection Dashboard</title>
+  <style>
+    :root {
+      --color-bg-light: #F4F7FE;
+      --color-primary: #1A2A47;
+      --color-white: #FFFFFF;
+      --color-teal: #2EC4B6;
+      --color-coral: #FF6B6B;
+      --font-family: 'Inter', 'Roboto', Arial, sans-serif;
+      --spacing-base: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-family);
+      background: linear-gradient(180deg, var(--color-bg-light), var(--color-white));
+      color: var(--color-primary);
+      min-height: 100vh;
+    }
+    .layout { display: flex; }
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--color-primary);
+      color: var(--color-white);
+      padding: var(--spacing-base);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header__logo { height: 32px; width: 32px; }
+    .header__title { font-size: 1.25rem; margin-left: 8px; }
+    .header__brand { display: flex; align-items: center; }
+    .header__user { display: flex; align-items: center; gap: 8px; }
+    .header__avatar {
+      height: 32px; width: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--color-white);
+    }
+    .header__username { font-size: 0.95rem; }
+    .header__toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--color-white);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: var(--color-white);
+      border-right: 1px solid #ececec;
+      transition: width 0.3s;
+    }
+    .sidebar--collapsed { width: 0; overflow: hidden; }
+    .sidebar__nav { margin-top: var(--spacing-base); }
+    .sidebar__list { list-style: none; }
+    .sidebar__item {
+      display: flex;
+      align-items: center;
+      padding: 12px var(--spacing-base);
+      cursor: pointer;
+      transition: background 0.2s;
+      border-left: 4px solid transparent;
+    }
+    .sidebar__item:hover {
+      background: var(--color-bg-light);
+    }
+    .sidebar__item--active {
+      background: var(--color-bg-light);
+      border-left: 4px solid var(--color-teal);
+    }
+    .sidebar__icon { margin-right: 12px; font-size: 1.2rem; }
+    .sidebar__label { font-size: 0.95rem; }
+    /* Main Content */
+    .main {
+      flex: 1;
+      padding: var(--spacing-base);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-base);
+    }
+    /* Prediction Form - Horizontal */
+    .predict-section {
+      background: var(--color-white);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      padding: var(--spacing-base);
+      margin-bottom: var(--spacing-base);
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .predict-section__title {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+    .predict-form-horizontal {
+      overflow-x: auto;
+      margin-bottom: 0.5rem;
+    }
+    .predict-form-horizontal__scroller {
+      display: flex;
+      align-items: flex-end;
+      gap: 18px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .predict-form-horizontal__fields {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(90px, 1fr));
+      gap: 12px;
+      min-width: 900px;
+    }
+    .predict-field label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #1A2A47;
+    }
+    .predict-field input {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      background: #f8fafc;
+      color: #1A2A47;
+      margin-top: 2px;
+      transition: border-color 0.2s;
+    }
+    .predict-field input:focus {
+      outline: none;
+      border-color: #2EC4B6;
+    }
+    .predict-form-horizontal__actions {
+      display: flex;
+      align-items: flex-end;
+      margin-left: 18px;
+    }
+    .predict-btn {
+      background: linear-gradient(90deg, #1A2A47, #2EC4B6);
+      color: #fff;
+      border: none;
+      padding: 11px 32px;
+      border-radius: 22px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .predict-btn:hover {
+      background: linear-gradient(90deg, #2EC4B6, #1A2A47);
+      transform: translateY(-2px) scale(1.03);
+    }
+    .predict-result {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: #f8fafc;
+    }
+    .predict-result--safe {
+      color: #2EC4B6;
+      border: 1.5px solid #2EC4B6;
+    }
+    .predict-result--fraud {
+      color: #FF6B6B;
+      border: 1.5px solid #FF6B6B;
+    }
+    /* Summary Cards */
+    .cards {
+      display: flex;
+      gap: var(--spacing-base);
+    }
+    .card {
+      background: var(--color-white);
+      border-radius: 8px;
+      padding: var(--spacing-base);
+      flex: 1;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: translateY(-4px); }
+    .card__title { font-size: 0.9rem; margin-bottom: 8px; }
+    .card__value { font-size: 1.5rem; font-weight: bold; }
+    .card--alert { border-left: 4px solid var(--color-coral); }
+    /* Charts Section */
+    .charts {
+      display: flex;
+      gap: var(--spacing-base);
+    }
+    .chart {
+      background: var(--color-white);
+      border-radius: 8px;
+      padding: var(--spacing-base);
+      flex: 1;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .chart__title { font-size: 1rem; margin-bottom: 12px; }
+    /* Table Section */
+    .table-section__title {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--color-white);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .table__head th {
+      text-align: left;
+      padding: 12px;
+      background: var(--color-bg-light);
+      font-size: 0.85rem;
+    }
+    .table__body tr {
+      transition: background 0.2s;
+    }
+    .table__row:hover {
+      background: rgba(46,196,182,0.08);
+    }
+    .table__row--alert {
+      border-left: 4px solid var(--color-coral);
+      background: rgba(255,107,107,0.05);
+    }
+    .table__body td {
+      padding: 12px;
+      font-size: 0.85rem;
+    }
+    .status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--color-white);
+    }
+    .status--safe { background: var(--color-teal); }
+    .status--alert { background: var(--color-coral); }
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .predict-form-horizontal__fields { grid-template-columns: repeat(6, minmax(90px, 1fr)); min-width: 700px; }
+    }
+    @media (max-width: 900px) {
+      .predict-form-horizontal__fields { grid-template-columns: repeat(4, minmax(90px, 1fr)); min-width: 480px; }
+    }
+    @media (max-width: 600px) {
+      .predict-form-horizontal__fields { grid-template-columns: repeat(2, minmax(90px, 1fr)); min-width: 240px; }
+      .predict-form-horizontal__scroller { gap: 8px; }
+      .predict-form-horizontal__actions { margin-left: 8px; }
+      .cards { flex-direction: column; }
+      .charts { flex-direction: column; }
+      .layout { flex-direction: column; }
+      .sidebar { width: 0; }
+      .sidebar:not(.sidebar--collapsed) { width: 220px; }
+      .predict-section { max-width: 100%; }
+    }
+    /* Accessibility focus */
+    .sidebar__item:focus, .header__toggle:focus, .card:focus, .table__row:focus, .predict-btn:focus {
+      outline: 2px solid var(--color-teal);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header / Navbar -->
+  <header class="header">
+    <div class="header__brand">
+      <img src="https://img.icons8.com/ios-filled/50/1A2A47/bank-cards.png" alt="Logo" class="header__logo"/>
+      <h1 class="header__title">FraudDetect Pro</h1>
+    </div>
+    <div class="header__user">
+      <span class="header__username">Sign In</span>
+    </div>
+    <button class="header__toggle" aria-label="Toggle navigation">&#9776;</button>
+  </header>
+  <div class="layout">
+    <!-- Side Menu -->
+    <aside class="sidebar sidebar--collapsed">
+      <nav class="sidebar__nav">
+        <ul class="sidebar__list">
+          <li class="sidebar__item sidebar__item--active" tabindex="0">
+            <span class="sidebar__icon" aria-label="Dashboard">🏠</span>
+            <span class="sidebar__label">Dashboard</span>
+          </li>
+          <li class="sidebar__item" tabindex="0">
+            <span class="sidebar__icon" aria-label="Transactions">💳</span>
+            <span class="sidebar__label">Transactions</span>
+          </li>
+          <li class="sidebar__item" tabindex="0">
+            <span class="sidebar__icon" aria-label="Alerts">⚠️</span>
+            <span class="sidebar__label">Alerts</span>
+          </li>
+          <li class="sidebar__item" tabindex="0">
+            <span class="sidebar__icon" aria-label="Settings">⚙️</span>
+            <span class="sidebar__label">Settings</span>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Prediction Form: Horizontal Scrollable Row -->
+      <section class="predict-section">
+        <div class="predict-section__title">Try a Fraud Prediction</div>
+        <form class="predict-form-horizontal" id="fraudForm" autocomplete="off">
+          <div class="predict-form-horizontal__scroller">
+            <div class="predict-form-horizontal__fields">
+              <div class="predict-field">
+                <label>Time<input type="number" name="Time" required step="any"></label>
+              </div>
+              <div class="predict-field">
+                <label>Amount<input type="number" name="Amount" required step="any"></label>
+              </div>
+              <!-- V1-V28 -->
+              <script>
+                for(let i=1; i<=28; i++) {
+                  document.write(`<div class="predict-field"><label>V${i}<input type="number" name="V${i}" required step="any"></label></div>`);
+                }
+              </script>
+            </div>
+            <div class="predict-form-horizontal__actions">
+              <button type="submit" class="predict-btn">Predict</button>
+            </div>
+          </div>
+        </form>
+        <div id="predictResult"></div>
+      </section>
+      <!-- Summary Cards -->
+      <section class="cards">
+        <div class="card">
+          <h2 class="card__title">Total Transactions</h2>
+          <p class="card__value">12,345</p>
+        </div>
+        <div class="card card--alert">
+          <h2 class="card__title">Fraudulent %</h2>
+          <p class="card__value">3.2%</p>
+        </div>
+        <div class="card">
+          <h2 class="card__title">Alerts Today</h2>
+          <p class="card__value">27</p>
+        </div>
+        <div class="card">
+          <h2 class="card__title">Avg. Transaction Value</h2>
+          <p class="card__value">$234.56</p>
+        </div>
+      </section>
+      <!-- Charts Section
+      <section class="charts">
+        <div class="chart chart--area">
+          <h2 class="chart__title">Daily Volume vs. Fraud Rate</h2>
+          <div style="width:100%;height:200px;background:linear-gradient(90deg,#F4F7FE 60%,#eaf6fa);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#bbb;">[Area Chart Placeholder]</div>
+        </div>
+        <div class="chart chart--pie">
+          <h2 class="chart__title">Fraud Type Breakdown</h2>
+          <div style="width:100%;height:200px;background:linear-gradient(90deg,#F4F7FE 60%,#eaf6fa);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#bbb;">[Pie Chart Placeholder]</div>
+        </div>
+      </section> -->
+      <!-- Data Table -->
+      <section class="table-section">
+        <h2 class="table-section__title">Recent Transactions</h2>
+        <table class="table">
+          <thead class="table__head">
+            <tr>
+              <th>Date</th>
+              <th>Transaction ID</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody class="table__body">
+            <tr class="table__row">
+              <td>2025-07-02</td>
+              <td>TXN12345</td>
+              <td>$120.00</td>
+              <td class="status status--safe">Safe</td>
+              <td>Online Purchase</td>
+            </tr>
+            <tr class="table__row table__row--alert">
+              <td>2025-07-02</td>
+              <td>TXN12346</td>
+              <td>$999.00</td>
+              <td class="status status--alert">Fraud</td>
+              <td>Wire Transfer</td>
+            </tr>
+            <tr class="table__row">
+              <td>2025-07-01</td>
+              <td>TXN12347</td>
+              <td>$59.99</td>
+              <td class="status status--safe">Safe</td>
+              <td>POS</td>
+            </tr>
+            <tr class="table__row table__row--alert">
+              <td>2025-07-01</td>
+              <td>TXN12348</td>
+              <td>$400.00</td>
+              <td class="status status--alert">Fraud</td>
+              <td>ATM Withdrawal</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+  <script>
+    // Toggle sidebar on small screens
+    document.querySelector('.header__toggle').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('sidebar--collapsed');
+    });
+
+    // Demo: Fake prediction result (replace with real AJAX for backend integration)
+    document.getElementById('fraudForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Simulate a random prediction
+      const isFraud = Math.random() < 0.2;
+      const resultDiv = document.getElementById('predictResult');
+      resultDiv.className = 'predict-result ' + (isFraud ? 'predict-result--fraud' : 'predict-result--safe');
+      resultDiv.textContent = isFraud
+        ? '⚠️ Fraudulent Transaction Detected! Probability: 0.96'
+        : '✅ Transaction is Legitimate. Probability: 0.03';
+    });
+  </script>
+</body>
+</html>

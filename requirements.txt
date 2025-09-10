@@ -1,16 +1,23 @@
-python-dotenv
+<<<<<<< HEAD
+numpy
+pandas
+scikit-learn
+imblearn
+xgboost
+catboost
+flask
+joblib
+dill
+gunicorn
+=======
 pandas
 numpy
-pymongo
-certifi
-pymongo[srv]==3.6
+seaborn
+matplotlib
 scikit-learn
-mlflow
-pyaml
-dagshub
-fastapi
-uvicorn
-python-multipart
-
-
-##-e .
+catboost
+xgboost
+dill
+flask
+>>>>>>> 568bd63 (New Commits)
+# -e .
