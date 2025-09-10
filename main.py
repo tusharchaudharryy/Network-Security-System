@@ -7,7 +7,6 @@ from networksecurity.logging.logger import logging
 from networksecurity.entity.config_entity import DataIngestionConfig,DataValidationConfig,DataTransformationConfig,ModelTrainerConfig
 from networksecurity.entity.config_entity import TrainingPipelineConfig
 
- 
 
 import sys
 
