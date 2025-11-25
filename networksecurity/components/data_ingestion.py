@@ -1,9 +1,6 @@
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
 
-
-## configuration of the Data Ingestion Config
-
 from networksecurity.entity.config_entity import DataIngestionConfig
 from networksecurity.entity.artifact_entity import DataIngestionArtifact
 import os
@@ -48,7 +45,6 @@ class DataIngestion:
     def export_data_into_feature_store(self,dataframe: pd.DataFrame):
         try:
             feature_store_file_path=self.data_ingestion_config.feature_store_file_path
-            #creating folder
             dir_path = os.path.dirname(feature_store_file_path)
             os.makedirs(dir_path,exist_ok=True)
             dataframe.to_csv(feature_store_file_path,index=False,header=True)
