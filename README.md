@@ -19,7 +19,6 @@ An end-to-end Machine Learning pipeline for detecting network intrusions using r
 -  **Experiment Tracking**: MLflow with [DagsHub Integration](https://dagshub.com)
 -  **Model Serving**: FastAPI (with HTML predictions)
 -  **Drift Monitoring**: KS Test
-
 ----
 
 
