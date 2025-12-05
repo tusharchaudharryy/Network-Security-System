@@ -4,7 +4,6 @@ from networksecurity.logging.logger import logging
 import os,sys
 import numpy as np
 import pickle
-
 from sklearn.metrics import r2_score
 from sklearn.model_selection import GridSearchCV
 
@@ -62,8 +61,6 @@ def load_numpy_array_data(file_path: str) -> np.ndarray:
     except Exception as e:
         raise NetworkSecurityException(e, sys) from e
     
-
-
 def evaluate_models(X_train, y_train,X_test,y_test,models,param):
     try:
         report = {}
