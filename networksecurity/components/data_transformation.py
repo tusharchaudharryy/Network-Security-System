@@ -87,8 +87,5 @@ class DataTransformation:
                 transformed_test_file_path=self.data_transformation_config.transformed_test_file_path
             )
             return data_transformation_artifact
-
-
-            
         except Exception as e:
             raise NetworkSecurityException(e,sys)
